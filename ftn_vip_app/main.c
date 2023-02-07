@@ -26,7 +26,7 @@ typedef struct
 
 //parametri servera
 #define ServerIP	"199.247.17.15"
-#define ServerPort	500xx
+#define ServerPort	50067
 
 void getSensorData(sensor_data *sd)
 {
@@ -52,6 +52,9 @@ void getSensorData(sensor_data *sd)
 void getAccelData(accel_3axis *accel)
 {
 	char str[32];
+	//sprintf(str, "usao sam u accel data");
+	usbUARTputString(str);
+	
 	LIS2DE12_getAccel(accel);
 
 	sprintf(str, "%d,%d,%d\r\n", accel -> accel_X, accel -> accel_Y, accel -> accel_Z);
@@ -60,13 +63,39 @@ void getAccelData(accel_3axis *accel)
 	delay(5);
 }
 
+int getAccelDataX(accel_3axis *accel)
+{
+	LIS2DE12_getAccel(accel);
+	return accel -> accel_X ;
+	
+}
+
+int getAccelDataY(accel_3axis *accel)
+{
+	LIS2DE12_getAccel(accel);
+	return accel -> accel_Y;
+	
+}
+
+int getAccelDataZ(accel_3axis *accel)
+{
+	LIS2DE12_getAccel(accel);
+	return accel -> accel_Z;
+	
+}
+
+/*int doorOpened(accel_3axis *accel)
+{
+	
+}*/
+
 void echoTest(uint8_t protocol, char *payload)
 {
 	char str[128], response[128];
 
-	sprintf(str, "Pritisni taster za slanje...\r\n");
+	/*sprintf(str, "Pritisni taster za slanje...\r\n");
 	usbUARTputString(str);
-	while (gpio_get_pin_level(BUTTON));
+	while (gpio_get_pin_level(BUTTON));*/
 
 	char socket = BC68_openSocket(1, protocol);
 	int16_t rxBytes = BC68_tx(protocol, ServerIP, ServerPort, payload, strlen(payload), socket);
@@ -94,24 +123,54 @@ int main(void)
 	enableLED();
 
 	//init sensors
-	SHTC3_begin();
-	bmp280_init();
-	BH1750FVI_begin();
+	//SHTC3_begin();
+	//bmp280_init();
+	//BH1750FVI_begin();
 	LIS2DE12_init();
 	
 	//NB-IoT connect
 	BC68_debugEnable(true, DEBUG_USB);
 	BC68_connect();
+	/*char resp[1024];
+	getBC68response("AT+CSIM=10,00B2010426\r\n", "OK", resp, 3000);*/
 
 	setLEDfreq(FREQ_1HZ);
 	sensor_data sd;
 	accel_3axis ad;
+	int x,y,z;
+	x = getAccelDataX(&ad);
+	y = getAccelDataY(&ad);
+	z = getAccelDataZ(&ad);
+	char response[1024];
 	while (1)
 	{
 		//getAccelData(&ad);
+		/*getBC68response("AT+CSMS=1\r\n", "OK", response, 3000);
+		getBC68response("AT+CNMA=1\r\n", "OK", response, 3000);
+		getBC68response("AT+CSCA=+38163537882,145\r\n", "OK", response, 3000);
+		getBC68response("AT+CMGS=+38163537882\r\n", "OK", response, 3000);*/
+		/*getBC68response("AT+CSCS=GSM\r\n", "OK", response, 300);
+		getBC68response("AT+CMGSW=+38163537882\r\n", "OK", response, 300);
+		getBC68response("AT+CMSS=54\r\n", "OK", response, 300);
+		getBC68response("AT+CMSS=54,+38163537882\r\n", "OK", response, 300);*/
+		
 		//getSensorData(&sd);
 		//echoTest(UDP, "UDP test data...");
-		//echoTest(TCP, "TCP test data...");
+		/*x = getAccelDataX(&ad);
+		y = getAccelDataY(&ad);
+		z = getAccelDataZ(&ad);*/
+		/*sprintf(str, "x: %d, y: %d, z: %d\r\n", x,y,z);
+		usbUARTputString(str);*/
+		if((y - getAccelDataY(&ad) > 5) | (y - getAccelDataY(&ad) < -5) | (z - getAccelDataZ(&ad) > 5) | (z - getAccelDataZ(&ad) < -5))
+		{
+			echoTest(TCP, "Vrata su se otvorila");
+		}
+		
+		if((x - getAccelDataX(&ad) > 10) | (x - getAccelDataX(&ad) < -10))
+		{
+			echoTest(TCP, "Senzor se ne nalazi na vratima");
+		}
+		
 		
 		//delay(5000);
 	}

@@ -94,47 +94,89 @@ bool BC68_nwkRegister(void)
 	
 	//	check FW version
 	if (!getBC68response("ATI\r\n", "OK", response, 1000))
+	{
+		char strc[32];
+		sprintf(strc, "ATI");
+		usbUARTputString(strc);
 		return false;
-	
+	}
 	if (!getBC68response("AT+NCONFIG=AUTOCONNECT,FALSE\r\n", "OK", response, 20000))
+	{
+		char strc[32];
+		sprintf(strc, "nconfig");
+		usbUARTputString(strc);
 		return false;
-
+	}
 	//	turn off full module functionality
 	if (!getBC68response("AT+CFUN=0\r\n", "OK", response, 20000))
+	{
+		char strc[32];
+		sprintf(strc, "CFUN");
+		usbUARTputString(strc);
 		return false;
-
+	}
 	//scan band 20 only
 	if (!getBC68response("AT+NBAND=20\r\n", "OK", response, 1000))
+	{
+		char strc[32];
+		sprintf(strc, "NBAND");
+		usbUARTputString(strc);
 		return false;
-
+	}
 	//	turn on full module functionality
 	if (!getBC68response("AT+CFUN=1\r\n", "OK", response, 20000))
+	{
+		char strc[32];
+		sprintf(strc, "TURN ON CFUN");
+		usbUARTputString(strc);
 		return false;
-	
+	}
 	//	check IMSI
 	char IMSI[20];
 	BC68_getIMSI(IMSI);
 	
 	//	error reporting
 	if (!getBC68response("AT+CMEE=1\r\n", "OK", response, 10000))
+	{
+		char strc[32];
+		sprintf(strc, "CMEE");
+		usbUARTputString(strc);
 		return false;
-	
+	}
 	//	automatically report network registration status
 	if (!getBC68response("AT+CEREG=1\r\n", "OK", response, 3000))
+	{
+		char strc[32];
+		sprintf(strc, "CEREG");
+		usbUARTputString(strc);
 		return false;
-	
+	}
 	//signaling connection status
 	if (!getBC68response("AT+CSCON=1\r\n", "OK", response, 3000))
+	{
+		char strc[32];
+		sprintf(strc, "cscon");
+		usbUARTputString(strc);
 		return false;
-	
+	}
 	//set APN
 	if (!getBC68response("AT+CGDCONT=0,\"IP\",\"iot\"\r\n", "OK", response, 3000))
+	{
+		char strc[32];
+		sprintf(strc, "apn");
+		usbUARTputString(strc);
 		return false;
-	
+	}
 	//connect to VIP
 	if (!getBC68response("AT+COPS=1,2,\"22005\"\r\n", "+CEREG:1", response, 30000))
-	//if (!getBC68response("AT+COPS=0\r\n", "+CEREG:1", response, 120000))
+	{
+		char strc[32];
+		sprintf(strc, "vip");
+		usbUARTputString(strc);
 		return false;
+	}
+	//if (!getBC68response("AT+COPS=0\r\n", "+CEREG:1", response, 120000))
+		
 	
 	//polling the network registration status
 	bool reg_ok;
@@ -180,6 +222,9 @@ bool BC68_connect(void)
 	uint16_t attempts = 0;
 	do
 	{
+		char strc[32];
+		sprintf(strc, "usao sam u BC68_connect");
+		usbUARTputString(strc);
 		connect_ok = BC68_nwkRegister();
 		attempts++;
 		if (!connect_ok)
@@ -439,6 +484,9 @@ bool BC68_getIMSI(char *IMSI)
 {
 	char response[64];
 	uint8_t i = 0;
+	
+	sprintf(response, "imsi zaglavio");
+	usbUARTputString(response);
 
 	getBC68response("AT+CIMI\r\n", "OK", response, 2000);
 
