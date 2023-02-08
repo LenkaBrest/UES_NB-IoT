@@ -60,6 +60,7 @@ while True:
             print(' Rx: ',data_in)
             print(' Tx: ',data_out)
             conn.sendall(data_out)
+        conn.close()
     except:
         conn.close()
         print('ERROR in Echo TCP')
